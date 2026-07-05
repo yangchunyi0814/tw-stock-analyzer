@@ -1,0 +1,16 @@
+{
+    "name": "node-red-contrib-tw-stock-analyzer",
+    "version": "1.0.0",
+    "description": "一個整合資料抓取、技術指標計算與 AI 分析功能的台灣股市分析 Node-RED 節點",
+    "dependencies": {
+        "axios": "^1.6.0"
+    },
+    "node-red": {
+        "nodes": {
+            "tw-stock-analyzer": "tw-stock-analyzer.js"
+        }
+    },
+    "author": "Codex",
+    "license": "Apache-2.0"
+}
+

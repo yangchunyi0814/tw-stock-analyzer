@@ -1,0 +1,131 @@
+<!-- 節點編輯介面的定義 -->
+<script type="text/x-red" data-template-name="tw-stock-analyzer">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> 名稱</label>
+        <input type="text" id="node-input-name" placeholder="智慧股市分析">
+    </div>
+    <div class="form-row">
+        <label for="node-input-apiKey"><i class="fa fa-key"></i> 預設 API Key</label>
+        <input type="password" id="node-input-apiKey" placeholder="Groq API Key (可被 msg.apiKey 覆寫)">
+    </div>
+    <div class="form-row">
+        <label for="node-input-model"><i class="fa fa-microchip"></i> Groq 模型</label>
+        <input type="text" id="node-input-model" placeholder="meta-llama/llama-4-scout-17b-16e-instruct">
+    </div>
+    <div class="form-row">
+        <label for="node-input-startDate"><i class="fa fa-calendar"></i> 開始日期</label>
+        <input type="date" id="node-input-startDate">
+    </div>
+    <div class="form-row">
+        <label for="node-input-endDate"><i class="fa fa-calendar"></i> 結束日期</label>
+        <input type="date" id="node-input-endDate">
+    </div>
+    <div class="form-row">
+        <label for="node-input-analysisType"><i class="fa fa-cogs"></i> AI 分析模型</label>
+        <select id="node-input-analysisType">
+            <option value="none">不進行 AI 分析</option>
+            <option value="summary">總體摘要</option>
+            <option value="technical">技術指標分析</option>
+            <option value="future">未來趨勢預測</option>
+            <option value="pattern">K線型態辨識 (JSON)</option>
+            <option value="expert">AI 專家建議 (需聯網)</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-check-square-o"></i> 補充分析</label>
+        <label style="width:auto; margin-right:16px;">
+            <input type="checkbox" id="node-input-includeEps" style="display:inline-block; width:auto; vertical-align:middle;">
+            EPS
+        </label>
+        <label style="width:auto; margin-right:16px;">
+            <input type="checkbox" id="node-input-includePER" style="display:inline-block; width:auto; vertical-align:middle;">
+            本益比
+        </label>
+        <label style="width:auto;">
+            <input type="checkbox" id="node-input-includeInstitutional" style="display:inline-block; width:auto; vertical-align:middle;">
+            三大法人買賣
+        </label>
+    </div>
+</script>
+
+<!-- 節點的說明文件 -->
+<script type="text/x-red" data-help-name="tw-stock-analyzer">
+    <p>一個整合了資料抓取、技術指標計算與 AI 分析功能的台灣股市分析節點。</p>
+    
+    <h3>輸入</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd> 包含查詢所需資訊的物件。結構如下：
+            <ul>
+                <li><code>stockCode</code> (string): <b>(必須)</b> 台灣上市公司的股票代號，例如 "2330"。</li>
+                <li><code>startDate</code> (string): 查詢開始日期，格式為 "YYYY-MM-DD"。若提供，會覆寫節點內設定。</li>
+                <li><code>endDate</code> (string): 查詢結束日期，格式為 "YYYY-MM-DD"。若提供，會覆寫節點內設定。</li>
+                <li><code>analysisType</code> (string, 可選): AI 分析類型。若提供，將覆寫節點的預設設定。可用選項同節點設定。</li>
+                <li><code>model</code> (string, 可選): Groq 模型名稱。若提供，將覆寫節點的預設模型。</li>
+                <li><code>includeEps</code> (boolean, 可選): 是否加入 EPS 推算資料。</li>
+                <li><code>includePER</code> (boolean, 可選): 是否加入本益比資料。</li>
+                <li><code>includeInstitutional</code> (boolean, 可選): 是否加入三大法人買賣超資料。</li>
+            </ul>
+        </dd>
+        <dt class="optional">apiKey
+            <span class="property-type">string</span>
+        </dt>
+        <dd> 您的 Groq API Key。若提供，將覆寫節點的預設設定。</dd>
+    </dl>
+
+    <h3>輸出</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd> 包含完整分析結果的物件，結構如下：
+            <ul>
+                <li><code>stockInfo</code> (object): 股票基本資訊 (<code>code</code>, <code>name</code>)。</li>
+                <li><code>analysisType</code> (string): 本次執行的 AI 分析類型。</li>
+                <li><code>model</code> (string | null): 本次使用的 Groq 模型；未執行 AI 分析時為 <code>null</code>。</li>
+                <li><code>options</code> (object): 本次啟用的補充分析選項。</li>
+                <li><code>processedData</code> (array): 包含完整技術指標 (MA, RSI, KD, MACD) 的歷史日資料陣列。</li>
+                <li><code>extraData</code> (object): 勾選後取得的補充資料，包含 <code>valuation</code> 與 <code>institutional</code>。</li>
+                <li><code>aiResult</code> (string | object): AI 分析的結果。
+                    <ul>
+                        <li>對於 "K線型態辨識"，此欄位會是一個 JSON 物件。</li>
+                        <li>對於其他分析類型，此欄位會是純文字字串。</li>
+                        <li>若未執行 AI 分析，此欄位為 <code>null</code>。</li>
+                    </ul>
+                </li>
+            </ul>
+        </dd>
+    </dl>
+    
+    <h3>詳細說明</h3>
+    <p>此節點會自動從台灣證券交易所抓取指定股票的歷史資料，計算多種常用的技術指標，並可選擇呼叫 Groq 進行不同維度的智慧分析。若勾選 EPS、本益比或三大法人買賣資料，節點會把補充資料一起提供給 Groq 分析。EPS 為收盤價除以本益比的推算值，不是 TWSE 直接揭露欄位。</p>
+</script>
+
+<!-- 節點在編輯器中的外觀定義 -->
+<script type="text/javascript">
+    if (typeof RED !== 'undefined') {
+        RED.nodes.registerType('tw-stock-analyzer',{
+            category: 'analysis', // 歸類在 "分析" 分類
+            color: '#88C0D0',    // 節點顏色 (北歐藍)
+            defaults: {
+                name: {value: ""},
+                apiKey: {value: "", type: "password"},
+                model: {value: "meta-llama/llama-4-scout-17b-16e-instruct"},
+                startDate: {value: ""},
+                endDate: {value: ""},
+                analysisType: {value: "none"},
+                includeEps: {value: false},
+                includePER: {value: false},
+                includeInstitutional: {value: false}
+            },
+            inputs: 1,
+            outputs: 1,
+            icon: "font-awesome/fa-line-chart", // 節點圖示
+            label: function() {
+                return this.name || "智慧股市分析";
+            }
+        });
+    }
+</script>
