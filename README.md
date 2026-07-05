@@ -5,11 +5,18 @@
 ## 安裝
 
 ```powershell
-cd C:\Users\User\.node-red
-npm install "E:\Codex\台股智能分析\node-red-contrib-tw-stock-analyzer"
+cd ~/.node-red
+npm install https://github.com/yangchunyi0814/tw-stock-analyzer.git
 ```
 
 重啟 Node-RED 後，在節點清單搜尋 `智慧股市分析`。
+
+Windows 若 PowerShell 無法正確解析 `~/.node-red`，請改用你的 Node-RED 使用者目錄，例如：
+
+```powershell
+cd "$env:USERPROFILE\.node-red"
+npm install https://github.com/yangchunyi0814/tw-stock-analyzer.git
+```
 
 ## 基本輸入
 
